@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos</title>
+</head>
+<body>
+  <h1>Ingrese su Producto</h1>
+  <form action="/api/productos" enctype="multipart/form-data" method="POST">
+    nombre: <input type="text" name="nombre">
+    precio: <input type="number" name="precio">
+    Url del logo: <input type="file" name="foto">
+    Foto del producto: <input type="file" name="miArchivo">
+    <input type="submit" value="Enviar">
+  </form>
+</body>
+</html>

@@ -1,34 +1,77 @@
-class Usuario {
-  constructor(nombre,apellido,libros,mascotas) {
-    this.nombre = nombre;
-    this.apellido = apellido;
-    this.libros = libros;
-    this.mascotas = mascotas;
+/* Imports */
+
+import express from 'express';
+import multer from 'multer';
+
+/* Routes */
+
+const app = express();
+const routerProductos = express.Router();
+
+app.use('/productos', routerProductos);
+app.use(express.urlencoded({extended: true}));
+app.use(express.static('public'));
+
+/* array de productos */
+
+const productos = [];
+
+/* multer */
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb){
+    cb(null, 'uploads');
+  },
+  filename: function(req, file, cb){
+    cb(null, file.originalname);
   }
+});
 
-  getFullName() {
-    console.log(`Hola ${this.nombre} ${this.apellido}`);
-  };
-  addMascota(mascota){
-    this.mascotas.push(mascota);
-  };
-  countMascotas(){
-    console.log(this.mascotas.length);
-  };
+const upload = multer({storage: storage});
 
-  addBook(book,autor){
-    this.libros.push({nombre: book,autor: autor});
-  };
-  getBookNames(){
-    console.log(this.libros.map((libro) => libro.nombre));
-  };
-}
+routerProductos.post('/subir', upload.single('miArchivo'), (req,res,next) => {
+  const file = req.file;
+  if(!file){
+    const error = new Error('Producto no encontrado');
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+  res.send(`Archivo <b>${file.originalname}</b> subido con exito`);
+});
 
-const usuario = new Usuario('Juan','Perez',['El principito','El aleph'],['Perro','Gato']);
-usuario.getFullName();
-usuario.addMascota('Pez');
-usuario.countMascotas();
-usuario.addBook('El señor de los anillos','J.R.R. Tolkien');
-usuario.getBookNames();
+routerProductos.get('/api/productos', (req, res) => {
+  res.json(productos);
+});
 
-console.log(usuario);
+routerProductos.get('/api/prodcutos/:id', (req, res) =>{
+  const id = req.params.id;
+  const producto = productos.find((producto) => producto.id == id);
+});
+
+routerProductos.post('/api/productos', (req, res) => {
+  const producto = req.body;
+  productos.push(producto);
+  res.json(producto);
+});
+
+routerProductos.put('/api/productos/:id', (req, res) => {
+  const id = req.params.id;
+  const producto = req.body;
+  const index = productos.findIndex((producto)=> producto.id == id);
+  productos[index] = producto;
+  res.json(producto);
+});
+
+routerProductos.delete('/api/productos/:id', (req, res) => {
+  const id = req.params.id;
+  const index = productos.findIndex((producto)=> producto.id == id);
+  productos.splice(index,1);
+  res.json(productos);
+});
+
+const port = 8080;
+const server = app.listen(port, () =>{
+  console.log(`Servidor escuchando en el puerto ${server.address().port}`);
+});
+
+server.on('error', error => {console.log(`error en servidor ${error}`)});
